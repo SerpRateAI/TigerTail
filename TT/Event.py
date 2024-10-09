@@ -1,3 +1,0 @@
-
-class EventSeries:
-  pass
