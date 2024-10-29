@@ -73,6 +73,16 @@ class TimeSeries:
     def apply(self):
         raise NotImplementedError('TODO!')
 
+class EventSeries:
+    def __init__(self, data, agg_func=None):
+        self.data = data
+        self.agg_func = agg_func
+
+    def window(self, freq):
+        return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+
 if __name__ == '__main__':
 
     print('Hello there... ~obi-wan kenobi')
+
+    
