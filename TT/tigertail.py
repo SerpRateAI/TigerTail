@@ -78,8 +78,11 @@ class EventSeries:
         self.data = data
         self.agg_func = agg_func
 
-    def window(self, freq):
-        return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+    def window(self, freq, fillnan=True):
+        if fillnan == True:
+            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func).fillna(0)
+        else:
+            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
 
 if __name__ == '__main__':
 
