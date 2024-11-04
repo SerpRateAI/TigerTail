@@ -51,7 +51,8 @@ class TimeFrame(MutableMapping):
 
     def window(self, freq):
         grouped_by = [self.__dict__[ts].window(freq=freq) for ts in self.__dict__]
-        return pd.concat(grouped_by, axis=1)
+        names = [self.__dict__[ts].data.columns[0] for ts in self.__dict__]
+        return pd.concat(grouped_by, axis=1, keys=names)
     
 class TimeSeries:
     def __init__(self, data, agg_func=None):
