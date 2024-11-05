@@ -51,7 +51,8 @@ class TimeFrame(MutableMapping):
 
     def window(self, freq):
         grouped_by = [self.__dict__[ts].window(freq=freq) for ts in self.__dict__]
-        return pd.concat(grouped_by, axis=1)
+        names = [self.__dict__[ts].data.columns[0] for ts in self.__dict__]
+        return pd.concat(grouped_by, axis=1, keys=names)
     
 class TimeSeries:
     def __init__(self, data, agg_func=None):
@@ -73,6 +74,19 @@ class TimeSeries:
     def apply(self):
         raise NotImplementedError('TODO!')
 
+class EventSeries:
+    def __init__(self, data, agg_func=None):
+        self.data = data
+        self.agg_func = agg_func
+
+    def window(self, freq, fillnan=True):
+        if fillnan == True:
+            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func).fillna(0)
+        else:
+            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+
 if __name__ == '__main__':
 
     print('Hello there... ~obi-wan kenobi')
+
+    
