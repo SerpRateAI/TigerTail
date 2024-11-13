@@ -49,10 +49,13 @@ class TimeFrame(MutableMapping):
         return '{}, D({})'.format(super(D, self).__repr__(), 
                                   self.__dict__)
 
-    def window(self, freq):
-        grouped_by = [self.__dict__[ts].window(freq=freq) for ts in self.__dict__]
+    def window(self, freq, fillnan=True):
+        grouped_by = [self.__dict__[ts].window(freq=freq, fillnan=True) for ts in self.__dict__]
         names = [self.__dict__[ts].data.columns[0] for ts in self.__dict__]
-        return pd.concat(grouped_by, axis=1, keys=names)
+        if fillnan == True:
+            return pd.concat(grouped_by, axis=1, keys=names).fillna(0)
+        else:
+            return pd.concat(grouped_by, axis=1, keys=names)
     
 class TimeSeries:
     def __init__(self, data, agg_func=None):
@@ -68,8 +71,11 @@ class TimeSeries:
         else:
             raise ValueError('You can only add TimeSeries objects to TimeSeries objects.')
 
-    def window(self, freq):
-        return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+    def window(self, freq, fillnan=True):
+        if fillnan == True:
+            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func).fillna(0)
+        else:
+            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
 
     def apply(self):
         raise NotImplementedError('TODO!')
