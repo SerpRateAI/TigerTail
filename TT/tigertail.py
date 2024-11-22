@@ -49,10 +49,15 @@ class TimeFrame(MutableMapping):
         return '{}, D({})'.format(super(D, self).__repr__(), 
                                   self.__dict__)
 
-    def window(self, freq):
-        grouped_by = [self.__dict__[ts].window(freq=freq) for ts in self.__dict__]
-        names = [self.__dict__[ts].data.columns[0] for ts in self.__dict__]
-        return pd.concat(grouped_by, axis=1, keys=names)
+    def window(self, freq, fillnan=True):
+        grouped_by = [self.__dict__[ts].window(freq=freq, fillnan=True) for ts in self.__dict__]
+        names = sum([[col for col in self.__dict__[ts].data.columns] for ts in self.__dict__], [])
+        if fillnan == True:
+            windowed_df = pd.concat(grouped_by, axis=1).fillna(0)
+            windowed_df.columns = names
+            return windowed_df
+        else:
+            return pd.concat(grouped_by, axis=1)
     
 class TimeSeries:
     def __init__(self, data, agg_func=None):
@@ -68,8 +73,15 @@ class TimeSeries:
         else:
             raise ValueError('You can only add TimeSeries objects to TimeSeries objects.')
 
-    def window(self, freq):
-        return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+    def window(self, freq, fillnan=True):
+        if fillnan == True:
+            windowed_df = self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func).fillna(0)
+            windowed_df.columns = self.data.columns
+            return windowed_df
+        else:
+            windowed_df = self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+            windowed_df.columns = self.data.columns
+            return windowed_df
 
     def apply(self):
         raise NotImplementedError('TODO!')
@@ -81,9 +93,13 @@ class EventSeries:
 
     def window(self, freq, fillnan=True):
         if fillnan == True:
-            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func).fillna(0)
+            windowed_df = self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func).fillna(0)
+            windowed_df.columns = self.data.columns
+            return windowed_df
         else:
-            return self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+            windowed_df = self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
+            windowed_df.columns = self.data.columns
+            return windowed_df
 
 if __name__ == '__main__':
 
