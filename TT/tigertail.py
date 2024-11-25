@@ -86,10 +86,12 @@ class TimeSeries:
     def apply(self):
         raise NotImplementedError('TODO!')
 
+
 class EventSeries:
-    def __init__(self, data, agg_func=None):
+    def __init__(self, data, agg_func=None, ns_window=None):
         self.data = data
         self.agg_func = agg_func
+        self.ns_window = ns_window
 
     def window(self, freq, fillnan=True):
         if fillnan == True:
@@ -100,6 +102,17 @@ class EventSeries:
             windowed_df = self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
             windowed_df.columns = self.data.columns
             return windowed_df
+        
+    def calc_start_end(self):
+        # sort dataframe by timestamp (assuming that index has timestamps)
+        # might need to deal with duplicate timestamps
+        sorted_data = self.data.sort_index()
+        timestamps = sorted_data.index.to_list().unique()
+        start_end_intervals = []
+        for i in range(0, len(timestamps)):
+            if i + 1 < len(timestamps):
+                start_end_intervals.append((timestamps[i], timestamps[i+1]))
+        self.ns_window = start_end_intervals
 
 if __name__ == '__main__':
 
