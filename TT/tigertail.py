@@ -88,13 +88,32 @@ class TimeSeries:
     
     def nonstationary_window(self, es, fillnan=True):
         windowed_dfs = []
+        windowed_df_index = []
+
+        interval_mask = self.data.index <= es.ns_window[0][0]
+        if fillnan == True:
+            wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0)
+            windowed_df_index.append(es.ns_window[0][1])
+            windowed_dfs.append(wndw_df)
+        else:
+            wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)
+            windowed_df_index.append(es.ns_window[0][1])
+            windowed_dfs.append(wndw_df)
+
         for interval in es.ns_window:
             interval_mask = (self.data.index > interval[0]) & (self.data.index <= interval[1])
             if fillnan == True:
-                windowed_dfs.append(pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)).fillna(0)
+                wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0)
+                windowed_df_index.append(interval[1])
+                windowed_dfs.append(wndw_df)
             else:
-                windowed_dfs.append(pd.DataFrame(self.data[interval_mask]).apply(self.agg_func))
-        return pd.concat(windowed_dfs)
+                wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)
+                windowed_df_index.append(interval[1])
+                windowed_dfs.append(wndw_df)
+
+        ns_window_result_df = pd.concat(windowed_dfs)
+        ns_window_result_df.index = windowed_df_index
+        return ns_window_result_df
 
 
 class EventSeries:
@@ -115,9 +134,9 @@ class EventSeries:
         
     def calc_start_end(self):
         # sort dataframe by timestamp (assuming that index has timestamps)
-        # might need to deal with duplicate timestamps
-        sorted_data = self.data.sort_index()
-        timestamps = sorted_data.index.to_list().unique()
+        # deal with duplicate timestamps using list(set())
+        timestamps = list(set(self.data.index.to_list()))
+        timestamps.sort()
         start_end_intervals = []
         for i in range(0, len(timestamps)):
             if i + 1 < len(timestamps):
