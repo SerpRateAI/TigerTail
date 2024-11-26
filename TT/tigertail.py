@@ -85,6 +85,16 @@ class TimeSeries:
 
     def apply(self):
         raise NotImplementedError('TODO!')
+    
+    def nonstationary_window(self, es, fillnan=True):
+        windowed_dfs = []
+        for interval in es.ns_window:
+            interval_mask = (self.data.index > interval[0]) & (self.data.index <= interval[1])
+            if fillnan == True:
+                windowed_dfs.append(pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)).fillna(0)
+            else:
+                windowed_dfs.append(pd.DataFrame(self.data[interval_mask]).apply(self.agg_func))
+        return pd.concat(windowed_dfs)
 
 
 class EventSeries:
