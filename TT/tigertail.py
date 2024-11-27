@@ -50,14 +50,24 @@ class TimeFrame(MutableMapping):
                                   self.__dict__)
 
     def window(self, freq, fillnan=True):
-        grouped_by = [self.__dict__[ts].window(freq=freq, fillnan=True) for ts in self.__dict__]
+        grouped_by = []
+        for ts in self.__dict__:
+            if freq.__class__ == EventSeries and ts.__class__ == TimeSeries:
+                grouped_by.append(self.__dict__[ts].nonstationary_window(es=freq, fillnan=True))
+            else:
+                grouped_by.append(self.__dict__[ts].window(freq=freq, fillnan=True))
+        
+        # grouped_by = [self.__dict__[ts].window(freq=freq, fillnan=True) for ts in self.__dict__]
         names = sum([[col for col in self.__dict__[ts].data.columns] for ts in self.__dict__], [])
+        
         if fillnan == True:
             windowed_df = pd.concat(grouped_by, axis=1).fillna(0)
             windowed_df.columns = names
             return windowed_df
         else:
-            return pd.concat(grouped_by, axis=1)
+            windowed_df = pd.concat(grouped_by, axis=1)
+            windowed_df.columns = names
+            return windowed_df
     
 class TimeSeries:
     def __init__(self, data, agg_func=None):
