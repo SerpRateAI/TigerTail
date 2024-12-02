@@ -52,8 +52,11 @@ class TimeFrame(MutableMapping):
     def window(self, freq, fillnan=True):
         grouped_by = []
         for ts in self.__dict__:
-            if freq.__class__ == EventSeries and ts.__class__ == TimeSeries:
+            # print(ts.__class__)
+            if freq.__class__ == EventSeries and self.__dict__[ts].__class__ == TimeSeries:
                 grouped_by.append(self.__dict__[ts].nonstationary_window(es=freq, fillnan=True))
+            elif freq.__class__ == EventSeries and self.__dict__[ts].__class__ == EventSeries:
+                grouped_by.append(self.__dict__[ts].data)
             else:
                 grouped_by.append(self.__dict__[ts].window(freq=freq, fillnan=True))
         
@@ -97,6 +100,9 @@ class TimeSeries:
         raise NotImplementedError('TODO!')
     
     def nonstationary_window(self, es, fillnan=True):
+        if es.ns_window == None:
+            es.calc_start_end()
+
         windowed_dfs = []
         windowed_df_index = []
 
@@ -104,25 +110,26 @@ class TimeSeries:
         if fillnan == True:
             wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0)
             windowed_df_index.append(es.ns_window[0][1])
-            windowed_dfs.append(wndw_df)
+            windowed_dfs.append(wndw_df.to_frame())
         else:
             wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)
             windowed_df_index.append(es.ns_window[0][1])
-            windowed_dfs.append(wndw_df)
+            windowed_dfs.append(wndw_df.to_frame())
 
-        for interval in es.ns_window:
+        for interval in es.ns_window[1:]:
             interval_mask = (self.data.index > interval[0]) & (self.data.index <= interval[1])
             if fillnan == True:
                 wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0)
                 windowed_df_index.append(interval[1])
-                windowed_dfs.append(wndw_df)
+                windowed_dfs.append(wndw_df.to_frame())
             else:
                 wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)
                 windowed_df_index.append(interval[1])
-                windowed_dfs.append(wndw_df)
+                windowed_dfs.append(wndw_df.to_frame())
 
-        ns_window_result_df = pd.concat(windowed_dfs)
+        ns_window_result_df = pd.concat(windowed_dfs, ignore_index=True)
         ns_window_result_df.index = windowed_df_index
+        ns_window_result_df.columns = self.data.columns
         return ns_window_result_df
 
 
