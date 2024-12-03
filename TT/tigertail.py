@@ -1,13 +1,13 @@
 """
-The main block for all of the classes and data loaders
-maybe one day this will not live here altogether in
-collective harmony.
+The TigerTail module contains the following classes:
 
-The needs of the many outweight the needs of the few. ~ Spock
+- `TimeFrame` - Dict mapping to TimeSeries and EventSeries objects.
+- `TimeSeries` - Wrapper for DataFrames of time series data.
+- `EventSeries` - Wrapper for DataFrames of event series data.
 """
+
 import numpy as np
 import pandas as pd
-import mkdocs
 from collections.abc import MutableMapping
 
 class TimeFrame(MutableMapping):
