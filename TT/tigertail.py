@@ -154,6 +154,8 @@ class EventSeries:
         # deal with duplicate timestamps using list(set())
         timestamps = list(set(self.data.index.to_list()))
         timestamps.sort()
+
+        # need to fix so that it can handle a list of just one timestamp
         start_end_intervals = []
         for i in range(0, len(timestamps)):
             if i + 1 < len(timestamps):
