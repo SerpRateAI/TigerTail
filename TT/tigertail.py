@@ -50,14 +50,25 @@ class TimeFrame(MutableMapping):
                                   self.__dict__)
 
     def window(self, freq, fillnan=True):
-        grouped_by = [self.__dict__[ts].window(freq=freq, fillnan=True) for ts in self.__dict__]
+        grouped_by = []
+        for ts in self.__dict__:
+            if freq.__class__ == EventSeries and self.__dict__[ts].__class__ == TimeSeries:
+                grouped_by.append(self.__dict__[ts].nonstationary_window(es=freq, fillnan=True))
+            elif freq.__class__ == EventSeries and self.__dict__[ts].__class__ == EventSeries:
+                grouped_by.append(self.__dict__[ts].data)
+            else:
+                grouped_by.append(self.__dict__[ts].window(freq=freq, fillnan=True))
+        
         names = sum([[col for col in self.__dict__[ts].data.columns] for ts in self.__dict__], [])
+        
         if fillnan == True:
             windowed_df = pd.concat(grouped_by, axis=1).fillna(0)
             windowed_df.columns = names
             return windowed_df
         else:
-            return pd.concat(grouped_by, axis=1)
+            windowed_df = pd.concat(grouped_by, axis=1)
+            windowed_df.columns = names
+            return windowed_df
     
 class TimeSeries:
     def __init__(self, data, agg_func=None):
@@ -85,11 +96,59 @@ class TimeSeries:
 
     def apply(self):
         raise NotImplementedError('TODO!')
+    
+    def nonstationary_window(self, es, fillnan=True):
+        if es.ns_window == None:
+            es.calc_start_end()
+        
+        if len(es.ns_window) == 1 and isinstance(es.ns_window[0], tuple) == False:
+            interval_mask = self.data.index <= es.ns_window[0]
+            if fillnan == True:
+                wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0).to_frame()
+                wndw_df.index = es.ns_window
+                wndw_df.columns = self.data.columns
+            else:
+                wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).to_frame()
+                wndw_df.index = es.ns_window
+                wndw_df.columns = self.data.columns
+            return wndw_df
+
+        else:
+            windowed_dfs = []
+            windowed_df_index = []
+
+            interval_mask = self.data.index <= es.ns_window[0][0]
+            if fillnan == True:
+                wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0)
+                windowed_df_index.append(es.ns_window[0][0])
+                windowed_dfs.append(wndw_df.to_frame())
+            else:
+                wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)
+                windowed_df_index.append(es.ns_window[0][1])
+                windowed_dfs.append(wndw_df.to_frame())
+
+            for interval in es.ns_window:
+                interval_mask = (self.data.index > interval[0]) & (self.data.index <= interval[1])
+                if fillnan == True:
+                    wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func).fillna(0)
+                    windowed_df_index.append(interval[1])
+                    windowed_dfs.append(wndw_df.to_frame())
+                else:
+                    wndw_df = pd.DataFrame(self.data[interval_mask]).apply(self.agg_func)
+                    windowed_df_index.append(interval[1])
+                    windowed_dfs.append(wndw_df.to_frame())
+
+            ns_window_result_df = pd.concat(windowed_dfs, ignore_index=True)
+            ns_window_result_df.index = windowed_df_index
+            ns_window_result_df.columns = self.data.columns
+            return ns_window_result_df
+
 
 class EventSeries:
-    def __init__(self, data, agg_func=None):
+    def __init__(self, data, agg_func=None, ns_window=None):
         self.data = data
         self.agg_func = agg_func
+        self.ns_window = ns_window
 
     def window(self, freq, fillnan=True):
         if fillnan == True:
@@ -100,6 +159,22 @@ class EventSeries:
             windowed_df = self.data.groupby(pd.Grouper(freq=freq)).apply(self.agg_func)
             windowed_df.columns = self.data.columns
             return windowed_df
+        
+    def calc_start_end(self):
+        # sort dataframe by timestamp (assuming that index has timestamps)
+        # deal with duplicate timestamps using list(set())
+        timestamps = list(set(self.data.index.to_list()))
+        timestamps.sort()
+
+        # need to fix so that it can handle a list of just one timestamp
+        if len(timestamps) == 1:
+            self.ns_window = timestamps
+        else:
+            start_end_intervals = []
+            for i in range(0, len(timestamps)):
+                if i + 1 < len(timestamps):
+                    start_end_intervals.append((timestamps[i], timestamps[i+1]))
+            self.ns_window = start_end_intervals
 
 if __name__ == '__main__':
 
