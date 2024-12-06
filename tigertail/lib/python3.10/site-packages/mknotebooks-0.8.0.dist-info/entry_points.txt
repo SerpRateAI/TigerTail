@@ -1,0 +1,3 @@
+[mkdocs.plugins]
+mknotebooks = mknotebooks.plugin:Plugin
+
