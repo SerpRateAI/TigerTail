@@ -9,9 +9,7 @@ jobs:
     name: Deploy docs
     runs-on: ubuntu-latest
     steps:
-      - run: pip install mkdocs-material mkdocstrings
-      - run: pip install -e .
-      - run: mkdocs gh-deploy --force
+      - run: pip install mkdocs-material mkdocstrings[python]
       
       - name: Checkout dev
         uses: actions/checkout@v1
