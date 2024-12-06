@@ -18,3 +18,4 @@ plugins:
       python:
         options:
           show_source: false
+- mknotebooks
