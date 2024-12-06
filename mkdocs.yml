@@ -10,7 +10,7 @@ theme:
   name: 'material'
 plugins:
 - search
-- mkdocstrings
+- mkdocstrings:
     enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
     custom_templates: templates
     default_handler: python
