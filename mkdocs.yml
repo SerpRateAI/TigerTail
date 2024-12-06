@@ -12,7 +12,6 @@ plugins:
 - search
 - mkdocstrings:
     enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
-    custom_templates: templates
     default_handler: python
     handlers:
       python:
