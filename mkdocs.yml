@@ -6,6 +6,7 @@ repo_name: 'SerpRateAI/TigerTail'
 repo_url: 'https://serprateai.github.io/TigerTail/'
 nav:
     - Home: index.md
+    - Reference: reference.md
 theme:
   name: 'material'
 plugins:
