@@ -1,6 +1,6 @@
-site_name: Test docs
-site_description: 'A docs test'
-site_author: 'John M. Aiken'
+site_name: TigerTail
+site_description: 'TigerTail documentation'
+site_author: 'John M. Aiken and Cassie Lem'
 docs_dir: docs/
 repo_name: 'SerpRateAI/TigerTail'
 repo_url: 'https://serprateai.github.io/TigerTail/'
