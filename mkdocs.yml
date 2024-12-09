@@ -6,7 +6,7 @@ repo_name: 'SerpRateAI/TigerTail'
 repo_url: 'https://serprateai.github.io/TigerTail/'
 nav:
     - Home: index.md
-    - Reference: reference.md
+    - Core: reference.md
     - Birthday Gift Example: birthday-gift-example.ipynb
     - Student Example: student-example.ipynb
     - SerpRate AI Example: serprate-ai-example.ipynb
