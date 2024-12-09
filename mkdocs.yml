@@ -7,7 +7,10 @@ repo_url: 'https://serprateai.github.io/TigerTail/'
 nav:
     - Home: index.md
     - Reference: reference.md
-    - birthday gift: examples/birthday-gift-example.ipynb
+    - Birthday Gift Example: birthday-gift-example.ipynb
+    - Student Example: student-example.ipynb
+    - SerpRate AI Example: serprate-ai-example.ipynb
+    - Detecting Heavy Drinking Example: detecting-heavy-drinking-example.ipynb
 theme:
   name: 'material'
 plugins:
