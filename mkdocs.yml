@@ -7,7 +7,7 @@ repo_url: 'https://serprateai.github.io/TigerTail/'
 nav:
     - Home: index.md
     - Reference: reference.md
-    - examples/birthday-gift-example.ipynb
+    - birthday gift: examples/birthday-gift-example.ipynb
 theme:
   name: 'material'
 plugins:
