@@ -9,7 +9,7 @@ jobs:
     name: Deploy docs
     runs-on: ubuntu-latest
     steps:
-      - run: pip install mkdocs-material mkdocstrings[python] mkdocs-jupyter
+      - run: pip install mkdocs-material mkdocstrings[python] mknotebooks
       
       - name: Checkout dev
         uses: actions/checkout@v1
